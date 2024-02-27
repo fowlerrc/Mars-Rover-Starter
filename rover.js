@@ -1,5 +1,31 @@
 class Rover {
-   // Write code here!
-}
+   constructor(position) {
+      this.position = position;
+      this.mode = 'NORMAL';
+      this.generatorWatts = 110
+   }
 
+   receiveMessage(message) {
+      const results = []
+      for (const command of message.commands) {
+         if (command.commandType == "MOVE") {
+            if (this.mode == 'LOW_POWER') {
+               results.push({ completed: false })
+            } else {
+               results.push({ completed: true })
+               this.position = command.value
+            }
+         } else if (command.commandType == "STATUS_CHECK") {
+            results.push({ completed: true, roverStatus: { mode: this.mode, generatorWatts: this.generatorWatts, position: this.position } })
+         } else if (command.commandType == "MODE_CHANGE") {
+            this.mode = command.value
+            results.push({completed: true})
+         }
+      }
+      return {
+         message: message.name,
+         results: results
+      }
+   }
+}
 module.exports = Rover;
